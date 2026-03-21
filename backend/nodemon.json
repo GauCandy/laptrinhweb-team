@@ -1,10 +1,10 @@
 
 {
-  "ext": "js,ejs,json,env",
+  "ext": "js,json,env",
   "ignore": [
     "public/*",
     "node_modules/*",
     ".git"
   ],
-  "exec": "node src/app.js" 
+  "exec": "node src/server.js" 
 }

@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Giữ nguyên đoạn enum và model User ở dưới của bạn
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+}
+
+model User {
+  id            Int          @id @default(autoincrement())
+  email         String       @unique
+  password      String?      
+  fullName      String?
+  avatarUrl     String?
+  role          Role         @default(CUSTOMER)
+  
+  authProvider  AuthProvider @default(LOCAL)
+  googleId      String?      @unique
+
+  orders        Order[]
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("users") 
+}
+
+// --------------------------------------------------
+// BẢNG DANH MỤC (Ví dụ: Điện thoại, Laptop, Quần áo...)
+// --------------------------------------------------
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique // Tên danh mục không được trùng
+  description String?   // Mô tả có thể để trống
+  
+  // Quan hệ 1-N: Báo cho Prisma biết 1 danh mục có rất nhiều sản phẩm
+  products    Product[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("categories")
+}
+
+// --------------------------------------------------
+// BẢNG SẢN PHẨM
+// --------------------------------------------------
+model Product {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?   @db.Text             // Dùng Text để chứa mô tả dài (như bài viết)
+  price       Decimal   @db.Decimal(10, 2)   // Tiền bạc bắt buộc dùng Decimal, tuyệt đối không dùng Float để tránh sai số
+  stock       Int       @default(0)          // Số lượng tồn kho mặc định là 0
+  imageUrl    String?                        // Đường dẫn ảnh sản phẩm
+  
+  // Thiết lập Khóa ngoại (Foreign Key) liên kết với bảng Category
+  categoryId  Int
+  category    Category  @relation(fields: [categoryId], references: [id])
+
+  orderItems  OrderItem[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("products")
+}
+
+enum OrderStatus {
+  PENDING      // Chờ xác nhận/Chờ thanh toán
+  PROCESSING   // Đang xử lý/Đóng gói
+  SHIPPED      // Đang giao hàng
+  DELIVERED    // Đã giao thành công
+  CANCELLED    // Đã hủy
+}
+
+// --------------------------------------------------
+// BẢNG ĐƠN HÀNG (Lưu thông tin tổng quát của 1 lần thanh toán)
+// --------------------------------------------------
+model Order {
+  id              Int           @id @default(autoincrement())
+  
+  // Khóa ngoại nối với bảng User (Ai là người mua?)
+  userId          Int
+  user            User          @relation(fields: [userId], references: [id])
+  
+  totalAmount     Decimal       @db.Decimal(10, 2) // Tổng tiền toàn bộ đơn
+  status          OrderStatus   @default(PENDING)  // Mặc định vừa đặt là PENDING
+  shippingAddress String        @db.Text           // Địa chỉ giao hàng
+  
+  // 1 Đơn hàng sẽ chứa nhiều dòng chi tiết sản phẩm
+  orderItems      OrderItem[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("orders")
+}
+
+// --------------------------------------------------
+// BẢNG CHI TIẾT ĐƠN HÀNG (Lưu từng món hàng trong 1 đơn)
+// --------------------------------------------------
+model OrderItem {
+  id          Int       @id @default(autoincrement())
+  
+  // Nằm trong Đơn hàng nào?
+  orderId     Int
+  order       Order     @relation(fields: [orderId], references: [id])
+  
+  // Mua Sản phẩm gì?
+  productId   Int
+  product     Product   @relation(fields: [productId], references: [id])
+  
+  quantity    Int       // Mua mấy cái?
+  price       Decimal   @db.Decimal(10, 2) // KIẾN THỨC CỐT LÕI: Lưu lại giá của sản phẩm TẠI THỜI ĐIỂM MUA
+
+  @@map("order_items")
+}
