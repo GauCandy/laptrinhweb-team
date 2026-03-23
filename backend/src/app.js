@@ -10,7 +10,7 @@ app.use(express.urlencoded({ extended: true }));
 
 
 
-app.get('/api/health', (req, res) => {
+app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
     message: "Hệ thống Backend E-commerce đang hoạt động hoàn hảo! 🚀",

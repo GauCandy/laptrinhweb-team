@@ -149,9 +149,32 @@ const loginUser = async (email, password) => {
   };
 };
 
+const getUserProfile = async (userId) => {
+  // Dùng Prisma lôi dữ liệu từ postgreSQL ra, dùng 'select' để giấu password 
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      avatarUrl: true,
+      role: true,
+      authProvider: true,
+      createdAt: true
+    }
+  });
+
+  if (!user) {
+    throw new Error('Người dùng không tồn tại trong hệ thống!');
+
+    return user;
+  }
+}
+
 module.exports = {
     registerUser,
     loginUser,
     loginWithGoogle,
-    getGoogleAuthUrl
+    getGoogleAuthUrl,
+    getUserProfile
   };
