@@ -5,7 +5,7 @@ const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     //Tiêu chuẩn quốc tế: Thẻ từ gửi lên phải có chữ "Bearer " đứng trước
-    if (!authHeader || !authHeader.startsWith('bearer')) {
+    if (!authHeader || !authHeader.startsWith('Bearer')) {
         return res.status(401).json({
             success: false,
             message: 'Truy cập bị từ chối! Bạn chưa cung cấp Token hợp lệ.'
@@ -34,5 +34,5 @@ const verifyToken = (req, res, next) => {
 };
 
 module.exports = {
-    verifyToken
+    verifyToken,
 }

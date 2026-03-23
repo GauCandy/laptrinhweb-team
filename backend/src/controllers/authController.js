@@ -94,11 +94,33 @@ const googleCallback = async (req, res) => {
         console.error("Lỗi Google Auth:", error);
         return res.status(500).json({ success: false, message: "Lỗi hệ thống khi đăng nhập Google!" });
     }
-}
+};
+
+const getProfile = async (req, res) => {
+  try {
+    // Middleware lén nhét cái ID của khách vào 'req.user'.
+    // Giờ chỉ việc thò tay vào lấy ra dùng, không cần hỏi gì thêm
+    const userId = req.user.userId;
+
+    const userProfile = await authService.getUserProfile(userId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Lấy thông tin cá nhân thành công!",
+      data: userProfile
+    });
+  } catch (error) {
+    return res.status(404).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
 
 module.exports = {
     register,
     login,
     googleCallback,
-    googleLogin
+    googleLogin,
+    getProfile
 };
