@@ -33,6 +33,23 @@ const verifyToken = (req, res, next) => {
     }
 };
 
+const authorizeRole = (...allowedRoles) => {
+    return (req, res, next) => {
+        // Lúc này, req.user đã được hàm verifyToken nhét vào rồi (chứa userId và role)
+        // Ta chỉ cần lôi cái role ra để kiểm tra
+        const userRole = req.user.role;
+
+        // Nếu chức vụ của khách không nằm trong danh sách được phép -> Đuổi cổ
+        if(!allowedRoles.includes(userRole)) {
+            return res.status(403).json({ success: false, message: "Cảnh báo: Bạn không đủ quyền hạn (Role) để thực hiện hành động này!"});
+        }
+
+        // Nếu đúng chức vụ có thể đi tiếp đến controller
+        next();
+    };
+};
+
 module.exports = {
     verifyToken,
+    authorizeRole
 }

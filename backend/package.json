@@ -29,5 +29,9 @@
     "@types/node": "^25.5.0",
     "nodemon": "^3.1.14",
     "prisma": "^6.19.2"
+  },
+
+  "prisma": {
+    "seed": "node prisma/seed.js"
   }
 }

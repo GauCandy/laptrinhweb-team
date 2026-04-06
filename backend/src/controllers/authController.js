@@ -117,10 +117,18 @@ const getProfile = async (req, res) => {
   }
 };
 
+const testAdmin = async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: "Chào sếp! Sếp đã lọt qua 2 lớp bảo vệ và vào được khu vực mật của Admin."
+  });
+};
+
 module.exports = {
     register,
     login,
     googleCallback,
     googleLogin,
-    getProfile
+    getProfile,
+    testAdmin
 };

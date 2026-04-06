@@ -1,6 +1,6 @@
 # E-commerce Backend
 
-## 🛠 Tech
+## Tech
 Node.js + Express + Prisma + PostgreSQL
 
 ## Setup
