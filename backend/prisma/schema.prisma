@@ -19,22 +19,24 @@ enum AuthProvider {
 }
 
 model User {
-  id            Int          @id @default(autoincrement())
-  email         String       @unique
-  password      String?      
-  fullName      String?
-  avatarUrl     String?
-  role          Role         @default(CUSTOMER)
-  
-  authProvider  AuthProvider @default(LOCAL)
-  googleId      String?      @unique
+  id           Int          @id @default(autoincrement())
+  email        String       @unique
+  password     String?
+  fullName     String?
+  avatarUrl    String?
+  role         Role         @default(CUSTOMER)
+  authProvider AuthProvider @default(LOCAL)
+  googleId     String?      @unique
+  createdAt    DateTime     @default(now()) @db.Timestamp(3)
+  updatedAt    DateTime     @updatedAt @db.Timestamp(3)
 
-  orders        Order[]
+  // Quan hệ: 1 User có 1 Cart, nhiều Order, nhiều Review, nhiều Address
+  cart      Cart?
+  addresses Address[]
+  orders    Order[]
+  reviews   Review[]
 
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-
-  @@map("users") 
+  @@map("users")
 }
 
 // --------------------------------------------------
@@ -42,15 +44,15 @@ model User {
 // --------------------------------------------------
 
 model Category {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique // Tên danh mục không được trùng
-  description String?   // Mô tả có thể để trống
-  
-  // Quan hệ 1-N: Báo cho Prisma biết 1 danh mục có rất nhiều sản phẩm
-  products    Product[]
+  id          Int     @id @default(autoincrement())
+  name        String  @unique // Tên danh mục không được trùng
+  description String? // Mô tả có thể để trống
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  // Quan hệ 1-N: Báo cho Prisma biết 1 danh mục có rất nhiều sản phẩm
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("categories")
 }
@@ -59,72 +61,138 @@ model Category {
 // BẢNG SẢN PHẨM
 // --------------------------------------------------
 model Product {
-  id          Int       @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   name        String
-  description String?   @db.Text             // Dùng Text để chứa mô tả dài (như bài viết)
-  price       Decimal   @db.Decimal(10, 2)   // Tiền bạc bắt buộc dùng Decimal, tuyệt đối không dùng Float để tránh sai số
-  stock       Int       @default(0)          // Số lượng tồn kho mặc định là 0
-  imageUrl    String?                        // Đường dẫn ảnh sản phẩm
-  
+  description String? @db.Text // Dùng Text để chứa mô tả dài (như bài viết)
+  price       Decimal @db.Decimal(10, 2) // Tiền bạc bắt buộc dùng Decimal, tuyệt đối không dùng Float để tránh sai số
+  stock       Int     @default(0) // Số lượng tồn kho mặc định là 0
+
   // Thiết lập Khóa ngoại (Foreign Key) liên kết với bảng Category
-  categoryId  Int
-  category    Category  @relation(fields: [categoryId], references: [id])
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  orderItems  OrderItem[]
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  orderItems OrderItem[]
+  cartItems  CartItem[]
+  reviews    Review[]
+  images     ProductImage[]
 
   @@map("products")
 }
 
-enum OrderStatus {
-  PENDING      // Chờ xác nhận/Chờ thanh toán
-  PROCESSING   // Đang xử lý/Đóng gói
-  SHIPPED      // Đang giao hàng
-  DELIVERED    // Đã giao thành công
-  CANCELLED    // Đã hủy
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  url       String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("product_images")
 }
 
-// --------------------------------------------------
-// BẢNG ĐƠN HÀNG (Lưu thông tin tổng quát của 1 lần thanh toán)
-// --------------------------------------------------
-model Order {
-  id              Int           @id @default(autoincrement())
-  
-  // Khóa ngoại nối với bảng User (Ai là người mua?)
-  userId          Int
-  user            User          @relation(fields: [userId], references: [id])
-  
-  totalAmount     Decimal       @db.Decimal(10, 2) // Tổng tiền toàn bộ đơn
-  status          OrderStatus   @default(PENDING)  // Mặc định vừa đặt là PENDING
-  shippingAddress String        @db.Text           // Địa chỉ giao hàng
-  
-  // 1 Đơn hàng sẽ chứa nhiều dòng chi tiết sản phẩm
-  orderItems      OrderItem[]
+model Cart {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now()) @db.Timestamp(3)
+  updatedAt DateTime @updatedAt @db.Timestamp(3)
 
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        Int     @id @default(autoincrement())
+  cartId    Int
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int     @default(1)
+
+  @@map("cart_items")
+}
+
+enum OrderStatus {
+  PENDING // Đơn mới tạo, chờ khách hàng thanh toán hoặc hệ thống xác nhận [cite: 20, 148]
+  PROCESSING // Đã xác nhận/thanh toán, đang trong quá trình đóng gói tại kho
+  SHIPPED // Hàng đã rời kho và đang được bên vận chuyển đi giao [cite: 70, 203]
+  DELIVERED // Khách hàng đã nhận được hàng thành công
+  CANCELLED // Đơn hàng bị hủy (do khách hủy hoặc hết hàng)
+  RETURNED // Khách hàng trả lại hàng sau khi nhận
+}
+
+model Order {
+  id          Int         @id @default(autoincrement())
+  userId      Int
+  user        User        @relation(fields: [userId], references: [id])
+  totalAmount Decimal     @db.Decimal(10, 2) // Tổng tiền đơn hàng
+  status      OrderStatus @default(PENDING) // Trạng thái đơn
+  createdAt   DateTime    @default(now()) @db.Timestamp(3)
+  updatedAt   DateTime    @updatedAt @db.Timestamp(3)
+
+  items    OrderItem[]
+  payment  Payment?
+  shipment Shipment?
 
   @@map("orders")
 }
 
-// --------------------------------------------------
-// BẢNG CHI TIẾT ĐƠN HÀNG (Lưu từng món hàng trong 1 đơn)
-// --------------------------------------------------
 model OrderItem {
-  id          Int       @id @default(autoincrement())
-  
-  // Nằm trong Đơn hàng nào?
-  orderId     Int
-  order       Order     @relation(fields: [orderId], references: [id])
-  
-  // Mua Sản phẩm gì?
-  productId   Int
-  product     Product   @relation(fields: [productId], references: [id])
-  
-  quantity    Int       // Mua mấy cái?
-  price       Decimal   @db.Decimal(10, 2) // KIẾN THỨC CỐT LÕI: Lưu lại giá của sản phẩm TẠI THỜI ĐIỂM MUA
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int // Số lượng mua
+  price     Decimal @db.Decimal(10, 2) // Giá chốt lúc mua
 
   @@map("order_items")
+}
+
+model Address {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  address   String   @db.Text // Địa chỉ chi tiết
+  phone     String   @db.VarChar(20) // Số điện thoại nhận hàng
+  createdAt DateTime @default(now()) @db.Timestamp(3)
+
+  @@map("addresses")
+}
+
+model Payment {
+  id        Int      @id @default(autoincrement())
+  orderId   Int      @unique
+  order     Order    @relation(fields: [orderId], references: [id])
+  method    String   @db.VarChar(50) // Ví dụ: COD, BANKING
+  status    String   @db.VarChar(50) // Trạng thái thanh toán
+  amount    Decimal  @db.Decimal(10, 2) // Số tiền đã trả
+  createdAt DateTime @default(now()) @db.Timestamp(3)
+
+  @@map("payments")
+}
+
+model Shipment {
+  id              Int       @id @default(autoincrement())
+  orderId         Int       @unique
+  order           Order     @relation(fields: [orderId], references: [id])
+  shippingAddress String    @db.Text // Địa chỉ giao thực tế
+  status          String    @db.VarChar(50) // Trạng thái giao hàng
+  shippedAt       DateTime? @db.Timestamp(3) // Thời điểm rời kho
+
+  @@map("shipments")
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  rating    Int // Số sao đánh giá
+  comment   String?  @db.Text // Nội dung đánh giá
+  createdAt DateTime @default(now()) @db.Timestamp(3)
+
+  @@map("reviews")
 }
