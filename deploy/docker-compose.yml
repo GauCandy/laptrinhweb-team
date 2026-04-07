@@ -1,0 +1,25 @@
+services:
+  app:
+    build: ../backend
+    container_name: app-app
+    ports:
+      - "6060:6060"
+    env_file:
+      - .env
+    restart: always
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8
+    restart: always
+    container_name: app-db
+    env_file:
+      - ../backend/.env
+    environment:
+      MYSQL_ROOT_PASSWORD: trung2809331
+      MYSQL_DATABASE: point_management_v2
+    ports:
+      - "3307:3306"
+    volumes:
+      # - /var/app/Point-management-v2/data/mysql_data:/var/lib/mysql  # QUAN TRỌNG: Lưu dữ liệu ra máy thật để không bị mất
