@@ -9,6 +9,7 @@ app.use(express.urlencoded({ extended: true }));
 const authRoute = require('./routes/authRoute');
 const addressRoute = require('./routes/addressRoute');
 const adminRoute = require('./routes/adminRoute');
+const categoryRoute = require('./routes/categoryRoute');
 
 
 
@@ -22,6 +23,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoute);
 app.use('/api/addresses', addressRoute);
 app.use('/api/admin', adminRoute);
+app.use('/api/categories', categoryRoute);
 
 
 module.exports = app;
