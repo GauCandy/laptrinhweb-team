@@ -35,6 +35,14 @@ const verifyToken = (req, res, next) => {
 
 const authorizeRole = (...allowedRoles) => {
     return (req, res, next) => {
+        // Chặn lỗi crash app kiểm tra xem req.user có tồn tại không đã
+        if (!req.user || !req.user.role) {
+            return res.status(401).json({
+                success: false,
+                message: "Lỗi hệ thống: Không tìm thấy thông tin quyền hạn của người dùng!"
+            });
+        }
+
         // Lúc này, req.user đã được hàm verifyToken nhét vào rồi (chứa userId và role)
         // Ta chỉ cần lôi cái role ra để kiểm tra
         const userRole = req.user.role;

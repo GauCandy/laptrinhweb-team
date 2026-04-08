@@ -1,12 +1,14 @@
 const express = require('express');
 const cors = require('cors');
-const authRoutes = require('./routes/authRoute');
-
 const app = express();
 
 app.use(cors()); 
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true }));
+
+const authRoute = require('./routes/authRoute');
+const addressRoute = require('./routes/addressRoute');
+const adminRoute = require('./routes/adminRoute');
 
 
 
@@ -17,7 +19,9 @@ app.get('/', (req, res) => {
   });
 });
 
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoute);
+app.use('/api/addresses', addressRoute);
+app.use('/api/admin', adminRoute);
 
 
 module.exports = app;
