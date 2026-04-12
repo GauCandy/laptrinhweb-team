@@ -6,5 +6,7 @@ const { verifyToken } = require('../middlewares/authMiddleware');
 // Đăng nhập có token là được thêm vào giỏ hàng
 router.post('/add', verifyToken, cartController.addItemToCart);
 router.get('/', verifyToken, cartController.getCart);
+router.put('/:itemId', verifyToken, cartController.updateItemQuantity);
+router.delete('/:itemId', verifyToken, cartController.removeItemFromCart);
 
 module.exports = router;

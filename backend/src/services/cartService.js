@@ -107,12 +107,74 @@ const getCart = async (userId) => {
 /**
  * Cập nhật số lượng của một món trong giỏ
  */
-const updateCartItem = async (userId, itemId, newQuantity) =. {
+const updateCartItem = async (userId, itemId, newQuantity) => {
     // Chặn ngay nếu truyền số lượng âm hoặc bằng 0
-    
-}
+    if (newQuantity < 1) {
+        throw new Error("Số lượng sản phẩm phải lớn hơn 0!");
+    } 
+
+    // Tìm món hàng đó, đồng thời kéo theo thông tin Giỏ (cart) và Sản phẩm (product)
+    const cartItem = await prisma.cartItem.findUnique({
+        where: { id: Number(itemId) },
+        include: {
+            cart: true, // Check giỏ hàng này của ai
+            product: true // Check xem kho còn bao nhiêu
+        }
+    });
+
+    if (!cartItem) {
+        throw new Error("Không tìm thấy sản phẩm này trong giỏ hàng!");
+    }
+
+    // Lớp bảo vệ: Giỏ hàng này có phải của User đang request không?
+    if (cartItem.cart.userId !== Number(userId)) {
+        throw new Error("Cảnh báo: Bạn không có quyền sửa giỏ hàng của người khác!");
+    }
+
+    // Lớp bảo vệ tồn kho: Số lượng mới có vượt quá số lượng trong kho không?
+    if (cartItem.product.stock < newQuantity) {
+        throw new Error(`Không đủ hàng! Kho chỉ còn tối đa ${cartItem.product.stock} sản phẩm.`);
+    }
+
+    // Mọi thuews hợp lệ -> tiến hành cập nhật
+    return await prisma.cartItem.update({
+        where: { id: Number(itemId) },
+        data: { quantity: Number(newQuantity) }
+    });
+};
+
+/**
+ * Xóa một món hàng khỏi giỏ
+ */
+const removeCartItem = async (userId, itemId ) => {
+    // Tìm món hàng và check xem nó nawmg ở giỏ của ai
+    const cartItem = await prisma.cartItem.findUnique({
+        where: { id: Number(itemId) },
+        include: {
+            cart: true // Kéo thông tin ra để check userId
+        }
+    });
+
+    if (!cartItem) {
+        throw new Error("Không tìm thấy sản phẩm này trong giỏ hàng!");
+    }
+
+    // Check xem user có đang xóa đúng đồ của mình chưa
+    if (cartItem.cart.userId !== Number(userId)) {
+        throw new Error("Cảnh báo: Bạn không có quyền xóa đồ trong giỏ của người khác!");
+    }
+
+    // Mọi thứ Ok -> Tiến hành xóa luônn
+    await prisma.cartItem.delete({
+        where: { id: Number(itemId) }
+    });
+
+    return true;
+};
 
 module.exports = {
     addToCart,
-    getCart
+    getCart,
+    updateCartItem,
+    removeCartItem 
 };

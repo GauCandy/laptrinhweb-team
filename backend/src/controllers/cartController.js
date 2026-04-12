@@ -39,7 +39,48 @@ const getCart = async (req, res) => {
     }
 };
 
+const updateItemQuantity = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { itemId } = req.params; // Lấy itemId từ trên url
+        const { quantity } = req.body; // Lấy quantity mới từ body
+
+        // Rào lỗi nếu client quân gửi chữ quantity
+        if (quantity === undefined) {
+            return res.status(400).json({ success: false, message: "Vui lòng cung cấp số lượng (quantity) mới!"});
+        }
+
+        const updatedItem = await cartService.updateCartItem(userId, itemId, quantity);
+
+        res.status(200).json({
+            success: true,
+            message: "Cập nhật số lượng thành công",
+            data: updatedItem
+        });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.massage });
+    }
+};
+
+const removeItemFromCart = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { itemId } = req.params; // Lấy Id của món hàng trên URL
+
+        await cartService.removeCartItem(userId, itemId);
+
+        res.status(200).json({
+            success: true,
+            message: "Đã xóa sản phẩm khỏi giỏ hàng thành công!"
+        });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     addItemToCart,
-    getCart
+    getCart,
+    updateItemQuantity,
+    removeItemFromCart
 };
