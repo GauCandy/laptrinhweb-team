@@ -1,6 +1,5 @@
 // src/services/productService.js
 const { PrismaClient } = require('@prisma/client');
-const { category } = require('../config/prisma');
 const prisma = new PrismaClient();
 
 /**
