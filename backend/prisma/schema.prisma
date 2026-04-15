@@ -161,25 +161,50 @@ model Address {
   @@map("addresses")
 }
 
+enum PaymentMethod {
+  VNPAY
+  MOMO
+  ZALOPAY
+  CASH // Thanh toán tiền mặt khi nhận hàng (COD)
+  BANK_TRANSFER // Chuyển khoản ngân hàng
+}
+
+enum Status {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
 model Payment {
-  id        Int      @id @default(autoincrement())
-  orderId   Int      @unique
-  order     Order    @relation(fields: [orderId], references: [id])
-  method    String   @db.VarChar(50) // Ví dụ: COD, BANKING
-  status    String   @db.VarChar(50) // Trạng thái thanh toán
-  amount    Decimal  @db.Decimal(10, 2) // Số tiền đã trả
-  createdAt DateTime @default(now()) @db.Timestamp(3)
+  id            Int           @id @default(autoincrement())
+  orderId       Int           @unique
+  order         Order         @relation(fields: [orderId], references: [id])
+  paymentMethod PaymentMethod
+  status        Status // Trạng thái thanh toán
+  amount        Decimal       @db.Decimal(10, 2) // Số tiền đã trả
+  createdAt     DateTime      @default(now()) @db.Timestamp(3)
 
   @@map("payments")
 }
 
+enum ShipmentStatus {
+  PENDING // Đang chờ lấy hàng
+  SHIPPED // Đã rời kho
+  DELIVERED // Đã giao thành công
+  RETURNED // Chuyển hoàn
+}
+
 model Shipment {
-  id              Int       @id @default(autoincrement())
-  orderId         Int       @unique
-  order           Order     @relation(fields: [orderId], references: [id])
-  shippingAddress String    @db.Text // Địa chỉ giao thực tế
-  status          String    @db.VarChar(50) // Trạng thái giao hàng
-  shippedAt       DateTime? @db.Timestamp(3) // Thời điểm rời kho
+  id              Int            @id @default(autoincrement())
+  orderId         Int            @unique
+  order           Order          @relation(fields: [orderId], references: [id])
+  shippingAddress String         @db.Text // Địa chỉ giao thực tế
+  carrier         String?        @db.VarChar(100)
+  trackingNumber  String?        @unique @db.VarChar(100)
+  status          ShipmentStatus @default(PENDING) // Trạng thái giao hàng
+
+  shippedAt   DateTime? @db.Timestamp(3) // Thời điểm rời kho
+  deliveredAt DateTime? @db.Timestamp(3) // // Thêm thời điểm giao thành công
 
   @@map("shipments")
 }

@@ -17,6 +17,7 @@ const categoryRoute = require('./routes/categoryRoute');
 const productRoute = require('./routes/productRoute');
 const cartRoute = require('./routes/cartRoute');
 const orderRoute = require('./routes/orderRoute');
+const { notFound, errorHandler } = require('./middlewares/errorMiddleware');
 
 
 
@@ -34,6 +35,9 @@ app.use('/api/categories', categoryRoute);
 app.use('/api/products', productRoute);
 app.use('/api/cart', cartRoute);
 app.use('/api/orders', orderRoute);
+
+app.use(notFound);
+app.use(errorHandler);
 
 
 module.exports = app;

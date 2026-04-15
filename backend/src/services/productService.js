@@ -9,11 +9,11 @@ const getPublicProducts = async (query) => {
   // Đặt giá trị mặc định nếu client không gửi lên
   const page = Number(query.page) || 1;
   const limit = Number(query.limit) || 10;
-  const search = query.search || '';
-  const categoryId = query.categoryId;
-
   // Tính toán số bản ghi cần bỏ qua (skip)
   const skip = (page - 1) * limit;
+
+  // Lấy thêm các tham số mới từ query
+  const { search, categoryId, minPrice, maxPrice, sortBy } = query;
 
   // Xây dựng bộ lọc động (Dynamic Where)
   const whereCondition = {};
@@ -27,6 +27,18 @@ const getPublicProducts = async (query) => {
     whereCondition.categoryId = Number(categoryId);
   }
 
+  // Lọc theo khoảng giá
+  if (minPrice || maxPrice) {
+    whereCondition.price = {};
+    if (minPrice) whereCondition.price.gte = parseFloat(minPrice);
+    if (maxPrice) whereCondition.price.lte = parseFloat(maxPrice);
+  }
+
+  // Logic sắp sếp (orderBy)
+  let orderByCondition = { createdAt: 'desc' }; // Mặc định mới nhất
+  if (sortBy === 'price_asc') orderByCondition = { price: 'asc' };
+  if (sortBy === 'price_desc') orderByCondition = { price: 'desc' };
+
   // Dùng Promise.all để chạy song song 2 lệnh: Lấy dữ liệu + Đếm tổng số
   const [products, totalItems] = await Promise.all([
     prisma.product.findMany({
@@ -34,7 +46,7 @@ const getPublicProducts = async (query) => {
       skip: skip,
       take: limit,
       include: { category: true }, // Kéo theo cả thông tin Danh mục của sản phẩm đó
-      orderBy: { createdAt: 'desc' }
+      orderBy: orderByCondition // Sử dụng biến sắp sếp động
     }),
     prisma.product.count({ where: whereCondition })
   ]);

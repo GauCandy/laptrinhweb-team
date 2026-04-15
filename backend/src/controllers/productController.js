@@ -6,10 +6,11 @@ const getProducts = async (req, res) => {
         
         res.status(200).json({
             success: true,
-            data: result.pagination
+            data: result.products,
+            pagination: result.pagination
         });
     } catch (error) {
-        res.status(500),json({ success: false, message: "Lỗi Server: " + error.message });
+        res.status(500).json({ success: false, message: "Lỗi Server: " + error.message });
     }
 };
 
