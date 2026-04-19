@@ -11,7 +11,7 @@ body {
     align-items: center;
     min-height: 100vh;
 
-    background-image: url("/frontend/access/nenlogin.png"); /* đường dẫn ảnh */
+    background-image: url("/frontend/assets/nenlogin.png"); /* đường dẫn ảnh */
     background-size: cover;       /* phủ full màn hình */
     background-position: center;  /* căn giữa */
     background-repeat: no-repeat; /* không lặp */

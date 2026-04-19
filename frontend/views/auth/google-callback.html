@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><title>Đang đăng nhập...</title></head>
+<body>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        const user = params.get('user');
+
+        if (token && user) {
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', user);
+            window.location.href = '/frontend/index.html'; // Về trang chủ
+        } else {
+            window.location.href = '/frontend/views/auth/login.html?error=google_failed';
+        }
+    </script>
+</body>
+</html>

@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('password').value;
             const errorMsg = document.getElementById('errorMessage');
             const loginBtn = document.getElementById('loginBtn');
+            const loginGoogle = document.getElementById('loginGoogle')
 
             try {
                 loginBtn.textContent = 'Đang đăng nhập...';
@@ -29,8 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
 
                 if (response.ok && result.success) {
-                    localStorage.setItem('accessToken', result.data.token);
-                    window.location.href = '/index.html';
+                    localStorage.setItem('token', result.accessToken);
+                    localStorage.setItem('user', JSON.stringify(result.data))
+                    window.location.href = '/frontend/index.html';
                 } else {
                     errorMsg.style.display = 'block';
                     errorMsg.textContent = result.message || 'Sai email hoặc mật khẩu!';

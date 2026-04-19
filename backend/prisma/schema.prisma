@@ -46,6 +46,7 @@ model User {
 model Category {
   id          Int     @id @default(autoincrement())
   name        String  @unique // Tên danh mục không được trùng
+  imageUrl    String? @db.Text
   description String? // Mô tả có thể để trống
 
   // Quan hệ 1-N: Báo cho Prisma biết 1 danh mục có rất nhiều sản phẩm
@@ -220,4 +221,17 @@ model Review {
   createdAt DateTime @default(now()) @db.Timestamp(3)
 
   @@map("reviews")
+}
+
+model Banner {
+  id           Int      @id @default(autoincrement())
+  title        String?  @db.Text // Tên banner (tùy chọn, để admin dễ quản lý)
+  imageUrl     String   @db.Text // Đường dẫn tới ảnh banner
+  targetLink   String?  @db.Text // Link khi khách hàng click vào banner (tùy chọn)
+  isActive     Boolean  @default(true) // Trạng thái bật/tắt banner
+  displayOrder Int      @default(0) // Thứ tự hiển thị trên trang chủ
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("banners")
 }

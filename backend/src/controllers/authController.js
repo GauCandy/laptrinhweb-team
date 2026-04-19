@@ -78,17 +78,8 @@ const googleCallback = async (req, res) => {
             return res.status(400).json({ success: false, message: "Google không trả về mã xác nhận!" });
         }
 
-        // Đưa mã cho công nhân sử lý
-        const result = authService.loginWithGoogle(code);
-
-        // Thành công! Tạm thời trả về JSON để xem kết quả.
-    // Thực tế sau này, chỗ này ta sẽ dùng res.redirect để đẩy khách về trang chủ giao diện.
-    return res.status(200).json({
-        success: true,
-        message: "Đăng nhập Google thành công rực rỡ!",
-        data: result.user,
-        accessToken: result.token
-    });
+        const { user, token } = await authService.loginWithGoogle(code);
+        return res.redirect(`http://localhost:5500/frontend/views/auth/google-callback.html?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
 
     } catch (error) {
         console.error("Lỗi Google Auth:", error);

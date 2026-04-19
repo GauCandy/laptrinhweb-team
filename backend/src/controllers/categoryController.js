@@ -3,9 +3,10 @@ const categoryService = require('../services/categoryService');
 const createCategory = async (req, res) => {
     try  {
         const { name, description } = req.body;
+        const imageUrl = req.file?.path || null; // Url từ cloudinary
         if (!name) return res.status(400).json({ success: false, message: "Tên danh mục là bắt buộc"});
 
-        const category = await categoryService.createCategory(name, description);
+        const category = await categoryService.createCategory(name, description, imageUrl);
         res.status(201).json({ success: true, message: "Tạo danh mục thành công", data: category });
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });

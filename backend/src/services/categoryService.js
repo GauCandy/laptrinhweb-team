@@ -2,7 +2,7 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient;
 
 // Tạo danh mục mới
-const createCategory = async (name, description ) => {
+const createCategory = async (name, description, imageUrl ) => {
     // Kiểm tra xem tên danh mục đã tồn tại chưa (vì chúng ta đặt @unique trong schema)
     const existingCategory = await prisma.category.findUnique({ where: { name } });
     if (existingCategory) {
@@ -10,7 +10,7 @@ const createCategory = async (name, description ) => {
     }
 
     const category = await prisma.category.create({
-        data: { name , description }
+        data: { name , description, imageUrl }
     });
 
     return category;

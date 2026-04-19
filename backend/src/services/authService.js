@@ -90,12 +90,15 @@ const registerUser = async (email, password, fullName) => {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
+  const finalFullName = fullName || email.split('@')[0];
+
+
   // Bước 3: Lưu user mới vào postgreSQL
   const newUser = await prisma.user.create({
     data: {
         email,
         password: hashedPassword,
-        fullName
+        fullName: finalFullName
     // role và authProvider không cần truyền vì Prisma sẽ tự lấy giá trị @default trong schema
     },
     // Chỉ select những trường cần thiết để trả về, TUYỆT ĐỐI giấu trường password đi
