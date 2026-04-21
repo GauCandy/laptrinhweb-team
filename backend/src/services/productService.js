@@ -45,7 +45,7 @@ const getPublicProducts = async (query) => {
       where: whereCondition,
       skip: skip,
       take: limit,
-      include: { category: true }, // Kéo theo cả thông tin Danh mục của sản phẩm đó
+      include: { category: true, images: true }, // Kéo theo cả thông tin Danh mục của sản phẩm đó
       orderBy: orderByCondition // Sử dụng biến sắp sếp động
     }),
     prisma.product.count({ where: whereCondition })
@@ -113,14 +113,25 @@ const updateProduct = async (id, updateData) => {
     const product = await prisma.product.findUnique({ where: { id: Number(id) } });
     if (!product) throw new Error("Không tìm thấy sản phẩm!");
 
+     // Tách images ra khỏi updateData để xử lý riêng
+    const { images, ...productData } = updateData;
+
     return await prisma.product.update({
         where: { id: Number(id) },
         data: {
-            ...updateData,
+            ...productData,
             price: updateData.price ? parseFloat(updateData.price) : undefined,
             stock: updateData.stock ? parseInt(updateData.stock) : undefined,
-            categoryId: updateData.categoryId ? Number(updateData.categoryId) : undefined
-        }
+            categoryId: updateData.categoryId ? Number(updateData.categoryId) : undefined,
+
+            ...(images && images.length > 0 && {
+              images: {
+                deleteMany: {},  // Xóa ảnh cũ
+                create: images.map(url => ({ url})) // Tạo ảnh mới
+              }
+            })
+        },
+        include: { images: true }
     });
 };
 

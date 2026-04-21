@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('password').value;
             const errorMsg = document.getElementById('errorMessage');
             const loginBtn = document.getElementById('loginBtn');
-            const loginGoogle = document.getElementById('loginGoogle')
 
             try {
                 loginBtn.textContent = 'Đang đăng nhập...';
@@ -32,7 +31,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok && result.success) {
                     localStorage.setItem('token', result.accessToken);
                     localStorage.setItem('user', JSON.stringify(result.data))
-                    window.location.href = '/frontend/index.html';
+
+                    const user = result.data;
+
+                    if (user.role === 'ADMIN') {
+                        window.location.href = '/frontend/views/admin/dashboard.html';
+                    } else {
+                        window.location.href = '/frontend/index.html';
+                    }
                 } else {
                     errorMsg.style.display = 'block';
                     errorMsg.textContent = result.message || 'Sai email hoặc mật khẩu!';

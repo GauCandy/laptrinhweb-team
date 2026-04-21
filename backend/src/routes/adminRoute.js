@@ -5,12 +5,8 @@ const userController = require('../controllers/userController');
 // Hai trạm kiểm soát 
 const { verifyToken, authorizeRole } = require('../middlewares/authMiddleware');
 
-// Áp dụng trạm kiểm soát cho toàn bộ các route bên dưới
-// 1. Phải đăng nhập (verifyToken)
-// 2. Phải là Admin (authorizeRole)
-router.use( verifyToken, authorizeRole('ADMIN'));
-
-router.get('/users', userController.getAllUsers);
-router.put('/users/:id/rolr', userController.updateUserRole);
+router.get('/users',verifyToken, authorizeRole('ADMIN'), userController.getAllUsers);
+router.put('/users/:id/role', userController.updateUserRole);
+router.put('/users/:id/status', userController.toggleUserStatus);
 
 module.exports = router;

@@ -26,7 +26,16 @@ const getProductDetails = async (req, res) => {
 
 const createProduct = async (req, res) => {
     try {
-        const product = await productService.createProduct(req.body);
+
+        // Lấy url ảnh từ req.file (do Cloudinary middleware xử lý)
+        const images = req.file ? [req.file.path] : [];
+
+        const product = await productService.createProduct({
+            ...req.body, // name, price, stock, categoryId, description
+            images,     // Truyền thêm mảng ảnh vào
+
+        });
+
         res.status(201).json({ success: true, message: "Tạo sản phẩm thành công", data: product });
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });
@@ -35,7 +44,16 @@ const createProduct = async (req, res) => {
 
 const updateProduct = async (req, res) => {
     try {
-        const product = await productService.updateProduct(req.params.id, req.body);
+
+         const images = req.file ? [req.file.path] : null;
+
+        const product = await productService.updateProduct(
+            req.params.id,
+            {
+                 ...req.body,
+                 images,
+            }
+        );
         res.status(200).json({ success: true, messgae: "Cập nhật thành công", data: product });
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });

@@ -4,7 +4,23 @@ const prisma = new PrismaClient();
 /**
  * Lấy danh sách tất cả người dùng (dành cho admin)
  */
-const getAllUsers = async () => {
+const getAllUsers = async (search, roleFilter) => {
+
+    let whereCondition = {};
+
+    // Nếu có từ khóa tìm kiếm
+    if (search) {
+        whereCondition.OR = [
+            { fullName: { contains: search } },
+            { email: { contains: search } }
+        ];
+    }
+
+    // Lọc theo Role
+    if ( roleFilter && roleFilter !== 'ALL') {
+        whereCondition.role = roleFilter;
+    }
+
     const users = await prisma.user.findMany({
         // Chỉ lấy các trường an toàn, GIẤU password đi
         select: {
@@ -14,6 +30,7 @@ const getAllUsers = async () => {
             avatarUrl: true,
             role: true,
             authProvider: true,
+            isActive: true,
             createdAt: true
         },
         orderBy: { createdAt: 'desc' }
@@ -48,7 +65,26 @@ const updateUserRole = async (userId, newRole) => {
     return updatedUser;
 };
 
+/**
+ * Khóa hoặc Mở khóa tài khoản người dùng
+ */
+const toggleUserStatus = async (userId, status) => {
+    const userExists = await prisma.user.findUnique({ where: { id: Number(userId) } });
+    if (!userExists) {
+        throw new Error("Không tìm thấy người dùng này!");
+    }
+
+    const updatedUser = await prisma.user.update({
+        where: { id: Number(userId) },
+        data: { isActive: status }, // Truyền vào là true hoặc false
+        select: { id: true, email: true, fullName: true, isActive: true }
+    });
+
+    return updatedUser;
+}
+
 module.exports = {
     getAllUsers,
-    updateUserRole
+    updateUserRole,
+    toggleUserStatus
 };

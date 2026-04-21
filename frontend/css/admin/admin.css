@@ -202,6 +202,7 @@ body {
 .page { display: none; padding: 24px; }
 .page.active { display: block; }
 
+
 /* ============ STAT CARDS ============ */
 .stat-grid {
     display: grid;
@@ -291,6 +292,7 @@ body {
     gap: 20px;
 }
 
+
 /* ============ TABLE ============ */
 .table-wrap { overflow-x: auto; }
 
@@ -336,10 +338,26 @@ body {
     font-weight: 500;
 }
 
+.badge-purple {
+    background: #f3e8ff;
+    color: #7e22ce;
+}
+
 .badge-pending  { background: var(--amber-light); color: var(--amber-text); }
 .badge-success  { background: var(--green-light); color: var(--green-text); }
 .badge-danger   { background: var(--red-light); color: var(--red-text); }
 .badge-info     { background: var(--blue-light); color: var(--blue-text); }
+
+.input-select {
+    padding: 7px 12px;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: var(--font);
+    outline: none;
+    background: #fff;
+    cursor: pointer;
+}
 
 /* ============ PLACEHOLDER PAGES ============ */
 .placeholder-page {
@@ -356,6 +374,46 @@ body {
 .placeholder-page h2 { font-size: 18px; font-weight: 600; color: var(--text-secondary); }
 .placeholder-page p { font-size: 13px; }
 
+
+
+/* ============ ORDER DETAIL ============ */
+.detail-section {
+    margin-bottom: 16px;
+}
+
+.detail-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.detail-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+/*==== Users ====*/
+
+.input-search {
+    padding: 7px 12px;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: var(--font);
+    outline: none;
+    width: 220px;
+    transition: border 0.15s;
+}
+
+.input-search:focus {
+    border-color: var(--green-primary);
+}
+
 /* ============ RESPONSIVE ============ */
 @media (max-width: 1024px) {
     .stat-grid { grid-template-columns: repeat(2, 1fr); }
@@ -369,3 +427,4 @@ body {
     .sidebar-toggle { display: block; }
     .stat-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
