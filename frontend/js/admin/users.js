@@ -74,10 +74,10 @@ async function loadUsers() {
                         <td style="padding: 15px;">${roleBadge}</td>
                         <td style="padding: 15px; color: #666;">${date}</td>
                         <td style="padding: 15px; text-align: center;">
-                            <button onclick="changeRole(${user.id}, '${user.role}')" style="background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 5px;">
+                            <button onclick="changeRole(${user.id}, '${user.role}')" class="btn-action btn-edit">
                                 Đổi quyền
                             </button>
-                            <button onclick="toggleStatus(${user.id}, ${user.isActive})" style="background: ${toggleColor}; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                            <button onclick="toggleStatus(${user.id}, ${user.isActive})" class="btn-action btn-delete">
                                 ${toggleIcon}
                             </button>
                         </td>

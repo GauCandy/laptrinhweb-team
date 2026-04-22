@@ -5,7 +5,9 @@ const { verifyToken, authorizeRole } = require("../middlewares/authMiddleware");
 
 // Chỉ cần đăng nhập là đặt được hàng
 router.post("/", verifyToken, orderController.createOrder);
+
 router.get("/", verifyToken, orderController.getMyOrders);
+
 router.get(
   "/admin/orders",
   verifyToken,
@@ -20,12 +22,6 @@ router.put(
   verifyToken,
   authorizeRole("ADMIN"),
   orderController.adminUpdateStatus,
-);
-router.post(
-  "/admin/orders/:id/shipment",
-  verifyToken,
-  authorizeRole("ADMIN"),
-  orderController.adminCreateShipment,
 );
 
 module.exports = router;

@@ -414,6 +414,30 @@ body {
     border-color: var(--green-primary);
 }
 
+/* Btn-action */
+.btn-action {
+    padding: 5px 10px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-family: var(--font);
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.15s;
+}
+
+.btn-action:hover { opacity: 0.8; }
+
+.btn-edit {
+    background: var(--blue-light);
+    color: var(--blue-text);
+}
+
+.btn-delete {
+    background: var(--red-light);
+    color: var(--red-text);
+}
+
 /* ============ RESPONSIVE ============ */
 @media (max-width: 1024px) {
     .stat-grid { grid-template-columns: repeat(2, 1fr); }

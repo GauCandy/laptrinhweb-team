@@ -103,25 +103,30 @@ async function loadPayments(method = "", status = "") {
   }
 }
 
+// Hàm submit gọi API PUT
+
 // ============ MODAL ============
 
-function openStatusModal(paymentId, orderId, crrentStatus) {
+function openStatusModal(paymentId, orderId, currentStatus) {
+  console.log("openStatusModal gọi với:", paymentId, orderId, currentStatus);
+
   updatingPaymentId = paymentId;
 
   document.getElementById("modalPaymentId").textContent = `${paymentId}`;
   document.getElementById("modalOrderId").textContent = `#${orderId}`;
-  document.getElementById("selectStatus").textContent = currentStatus;
+  document.getElementById("selectStatus").value = currentStatus;
   document.getElementById("modalError").textContent = "";
 
   document.getElementById("modalStatus").classList.add("active");
 }
+
 function closeModal() {
   updatingPaymentId = null;
   document.getElementById("modalStatus").classList.remove("active");
 }
 
 async function submitStatus() {
-  const status = document.getElementById("selectStatus").ariaValueMax;
+  const status = document.getElementById("selectStatus").value;
   const errorEl = document.getElementById("modalError");
   const btnSubmit = document.getElementById("btnSubmitModal");
 
@@ -129,7 +134,7 @@ async function submitStatus() {
     btnSubmit.textContent = "Đang cập nhật...";
     btnSubmit.disabled = true;
 
-    await apiFetch(`/admin/pay/${updatingPaymentId}/status`, {
+    await apiFetch(`/payments/admin/${updatingPaymentId}/pay/status`, {
       method: "PUT",
       body: JSON.stringify({ status }),
     });

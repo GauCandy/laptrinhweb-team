@@ -18,6 +18,7 @@ const productRoute = require("./routes/productRoute");
 const cartRoute = require("./routes/cartRoute");
 const orderRoute = require("./routes/orderRoute");
 const paymentRoute = require("./routes/paymentRoute");
+const shipmentRoute = require("./routes/shipmentRoute");
 const { notFound, errorHandler } = require("./middlewares/errorMiddleware");
 
 app.get("/", (req, res) => {
@@ -35,6 +36,7 @@ app.use("/api/products", productRoute);
 app.use("/api/cart", cartRoute);
 app.use("/api/orders", orderRoute);
 app.use("/api/payments", paymentRoute);
+app.use("/api/shipments", shipmentRoute);
 
 app.use(notFound);
 app.use(errorHandler);

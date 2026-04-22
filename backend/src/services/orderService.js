@@ -121,53 +121,6 @@ const getOrderDetails = async (userId, orderId) => {
 };
 
 /**
- * Mô phỏng thanh toán đơn hàng
- */
-const payOrder = async (orderId, paymentMethod) => {
-  // Kiểm tra đơn hàng có tồn tại không
-  const order = await prisma.order.findUnique({
-    where: { id: Number(orderId) },
-  });
-
-  if (!order) throw new Error("Không tìm thấy đơn hàng!");
-  if (order.status !== "PENDING")
-    throw new Error("Đơn hàng này đã được xử lý hoặc đã thanh toán trước đó!");
-
-  // Dùng Transaction: Vừa tạo bản ghi thanh toán, vừa cập nhật trạng thái đơn hàng
-  return await prisma.$transaction(async (tx) => {
-    // Tạo bản ghi trong bảng payment (Để kế toán sau này đối soát)
-    await tx.payment.create({
-      data: {
-        orderId: Number(orderId),
-        amount: order.totalAmount,
-        paymentMethod: paymentMethod, // MOMO, VNPAY...
-        status: "COMPLETED",
-      },
-    });
-
-    // Cập nhật đơn hàng sang trạng thái PROCESSING (Đang xử lý/Đã thanh toán)
-    return await tx.order.update({
-      where: { id: Number(orderId) },
-      data: { status: "PROCESSING" },
-    });
-  });
-};
-
-// Danh sách thanh toán
-const getAllPayments = async () => {
-  return await prisma.payment.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      order: {
-        include: {
-          user: { select: { fullName: true, email: true } },
-        },
-      },
-    },
-  });
-};
-
-/**
  * API dành cho ADMIN: Xem tất cả đơn hàng
  */
 const getAllOrders = async () => {
@@ -206,54 +159,10 @@ const updateOrderStatus = async (orderId, status) => {
   });
 };
 
-/**
- * Admin cập nhật thông tin vận chuyển
- */
-const updateShipmentInfo = async (orderId, shipmentData) => {
-  const { carrier, trackingNumber, shippedAt } = shipmentData;
-
-  // Cập nhật thông tin trong bảng shipment liên kết với order
-  return await prisma.shipment.update({
-    where: { orderId: Number(orderId) },
-    data: {
-      carrier: carrier,
-      trackingNumber: trackingNumber,
-      shippedAt: shippedAt ? new Date(shippedAt) : new Date(),
-      status: "SHIPPED", // khi đã có thông tin này thì bên vận chuyển cũng đổi trạng thái
-    },
-  });
-};
-
-/**
- * Xác nhận đã giao hàng thành công
- */
-const confirmDelivered = async (orderId) => {
-  return await prisma.$transaction(async (tx) => {
-    // Cập nhật trạng thái shipment
-    await tx.shipment.update({
-      where: { orderId: Number(orderId) },
-      data: {
-        status: "DELIVERED",
-        deliveredAt: new Date(),
-      },
-    });
-
-    // Cập nhật trạng thái Order
-    return await tx.order.update({
-      where: { id: Number(orderId) },
-      data: { status: "DELIVERED" },
-    });
-  });
-};
-
 module.exports = {
   placeOrder,
   getUserOrders,
   getOrderDetails,
-  payOrder,
   getAllOrders,
   updateOrderStatus,
-  updateShipmentInfo,
-  confirmDelivered,
-  getAllPayments,
 };
