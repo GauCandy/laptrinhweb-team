@@ -44,7 +44,7 @@ function renderSidebar(activePage) {
                 <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M200-280v-280h80v280h-80Zm240 0v-280h80v280h-80ZM80-640v-80l400-200 400 200v80H80Zm179-80h442L480-830 259-720ZM80-120v-80h482q2 21 5 40.5t9 39.5H80Zm600-310v-130h80v90l-80 40ZM800 0q-69-17-114.5-79.5T640-218v-102l160-80 160 80v102q0 76-45.5 138.5T800 0Zm-29-120 139-138-42-42-97 95-39-39-42 43 81 81ZM259-720h442-442Z"/></svg></span>
                 Quản lý thanh toán
             </a>
-            <a href="shipping.html" class="nav-item ${activePage === "shipping" ? "active" : ""}">
+            <a href="shipment.html" class="nav-item ${activePage === "shipping" ? "active" : ""}">
                 <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M155-195q-35-35-35-85H40v-440q0-33 23.5-56.5T120-800h560v160h120l120 160v200h-80q0 50-35 85t-85 35q-50 0-85-35t-35-85H360q0 50-35 85t-85 35q-50 0-85-35Zm113.5-56.5Q280-263 280-280t-11.5-28.5Q257-320 240-320t-28.5 11.5Q200-297 200-280t11.5 28.5Q223-240 240-240t28.5-11.5ZM120-360h32q17-18 39-29t49-11q27 0 49 11t39 29h272v-360H120v360Zm628.5 108.5Q760-263 760-280t-11.5-28.5Q737-320 720-320t-28.5 11.5Q680-297 680-280t11.5 28.5Q703-240 720-240t28.5-11.5ZM680-440h170l-90-120h-80v120ZM360-540Z"/></svg></span>
                 Vận chuyển
             </a>
@@ -76,7 +76,25 @@ function renderSidebar(activePage) {
     window.location.href = "../../views/auth/login.html";
   });
 
-  document.getElementById("sidebarToggle")?.addEventListener("click", () => {
-    document.getElementById("sidebar")?.classList.toggle("open");
+  document.getElementById("logoutBtn")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "../../views/auth/login.html";
   });
+
+  // GẮN SỰ KIỆN CLICK CHO NÚT HAMBURGER (Không dùng DOMContentLoaded nữa)
+  const toggleBtn = document.getElementById("sidebarToggle");
+  const sidebar = document.getElementById("sidebar");
+  const mainContent = document.querySelector(".main-content");
+
+  if (toggleBtn && sidebar) {
+    // Để an toàn (tránh bị gắn sự kiện nhiều lần nếu gọi hàm 2 lần), ta có thể gán thẳng hàm vào onclick
+    toggleBtn.onclick = () => {
+      sidebar.classList.toggle("collapsed");
+      if (mainContent) {
+        mainContent.classList.toggle("expanded");
+      }
+    };
+  }
 }
