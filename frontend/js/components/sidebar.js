@@ -56,10 +56,28 @@ function renderSidebar(activePage) {
                 <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="m363-390 117-71 117 71-31-133 104-90-137-11-53-126-53 126-137 11 104 90-31 133ZM80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H240L80-80Zm126-240h594v-480H160v525l46-45Zm-46 0v-480 480Z"/></svg></span>
                 Reviews
             </a>
-            <a href="marketing.html" class="nav-item ${activePage === "marketing" ? "active" : ""}">
-                <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h480q33 0 56.5 23.5T800-800v640q0 33-23.5 56.5T720-80H240Zm0-80h480v-640H240v640Zm40-80h400L542-420l-92 120-62-80-108 140Zm-40 80v-640 640Z"/></svg></span>
-                Giao diện & Marketing
-            </a>
+            <div class="nav-group">
+                <a href="#" class="nav-item ${activePage === "marketing" ? "active" : ""}" onclick="toggleMarketingMenu(event, this)">
+                    <div class="drop">
+                        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3"><path d="M240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h480q33 0 56.5 23.5T800-800v640q0 33-23.5 56.5T720-80H240Zm0-80h480v-640H240v640Zm40-80h400L542-420l-92 120-62-80-108 140Zm-40 80v-640 640Z"/></svg></span>
+                        Giao diện & marketing
+                    </div>
+                    <span class="submenu-arrow">▼</span>
+                </a>
+
+                <div class="marketing-submenu">
+                    <a href="/admin/featuredProducts.html" class="featured-products">
+                    <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#e3e3e3"><path d="m480-120-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Zm0-108q96-86 158-147.5t98-107q36-45.5 50-81t14-70.5q0-60-40-100t-100-40q-47 0-87 26.5T518-680h-76q-15-41-55-67.5T300-774q-60 0-100 40t-40 100q0 35 14 70.5t50 81q36 45.5 98 107T480-228Zm0-273Z"/></svg></span>
+                    Sản phẩm nổi bật</a>
+                    <a href="/admin/banners.html" class="banners">
+                    <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#e3e3e3"><path d="M720-160v-120H600v-80h120v-120h80v120h120v80H800v120h-80Zm-600 40q-33 0-56.5-23.5T40-200v-560q0-33 23.5-56.5T120-840h560q33 0 56.5 23.5T760-760v200h-80v-80H120v440h520v80H120Zm0-600h560v-40H120v40Zm0 0v-40 40Z"/></svg></span>
+                    Quản lý Banner</a>
+                    <a href="/admin/coupons.html" class="coupons">
+                    <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#e3e3e3"><path d="m368-320 112-84 110 84-42-136 112-88H524l-44-136-44 136H300l110 88-42 136ZM160-160q-33 0-56.5-23.5T80-240v-135q0-11 7-19t18-10q24-8 39.5-29t15.5-47q0-26-15.5-47T105-556q-11-2-18-10t-7-19v-135q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v135q0 11-7 19t-18 10q-24 8-39.5 29T800-480q0 26 15.5 47t39.5 29q11 2 18 10t7 19v135q0 33-23.5 56.5T800-160H160Zm0-80h640v-102q-37-22-58.5-58.5T720-480q0-43 21.5-79.5T800-618v-102H160v102q37 22 58.5 58.5T240-480q0 43-21.5 79.5T160-342v102Zm320-240Z"/></svg></span>
+                    Voucher / Giảm giá</a>
+                </div>
+            </div>
+
             <div class="nav-divider"></div>
             <a href="#" class="nav-item nav-logout" id="logoutBtn">
                 <span class="nav-icon">⏻</span> Đăng xuất
@@ -97,4 +115,16 @@ function renderSidebar(activePage) {
       }
     };
   }
+}
+
+function toggleMarketingMenu(event, element) {
+  event.preventDefault(); // Chặn hành vi load trang của thẻ a
+
+  // Tìm menu con nằm dưới thẻ a
+  const submenu = element.nextElementSibling;
+  const arrow = element.querySelector(".submenu-arrow");
+
+  // Bật tắt trạng thái hiển thị
+  submenu.classList.toggle("show");
+  arrow.classList.toggle("rotate");
 }

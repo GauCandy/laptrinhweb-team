@@ -5,6 +5,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const user = checkAdminAuth();
   if (!user) return;
 
+  renderSidebar("shipping");
+
+  startClock();
+
   initSearchAndFilter();
 
   loadShipments();

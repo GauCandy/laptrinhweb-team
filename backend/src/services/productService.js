@@ -153,10 +153,34 @@ const deleteProduct = async (id) => {
   return true;
 };
 
+/**
+ *  Lấy top 8 sản phẩm đang được đánh dấu nổi bật
+ */
+const getFeaturedProducts = async () => {
+  return await prisma.product.findMany({
+    where: { isFeatured: true },
+    take: 8, // Lấy tối đa 8 cái
+    orderBy: { createdAt: "desc" }, // Lấy những cái mới nhất
+    include: { images: true }, // lấy cả ảnh để hiện ra trang chủ
+  });
+};
+
+/**
+ * Bật tắt trạng thái nổi bật
+ */
+const toggleFeaturedStatus = async (productId, currentStatus) => {
+  return await prisma.product.update({
+    where: { id: Number(productId) },
+    data: { isFeatured: !currentStatus }, // Đang true thì thành false đang false thì thành true
+  });
+};
+
 module.exports = {
   getPublicProducts,
   getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
+  getFeaturedProducts,
+  toggleFeaturedStatus,
 };

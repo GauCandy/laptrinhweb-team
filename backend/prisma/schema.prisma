@@ -68,6 +68,7 @@ model Product {
   description String? @db.Text // Dùng Text để chứa mô tả dài (như bài viết)
   price       Decimal @db.Decimal(10, 2) // Tiền bạc bắt buộc dùng Decimal, tuyệt đối không dùng Float để tránh sai số
   stock       Int     @default(0) // Số lượng tồn kho mặc định là 0
+  isFeatured  Boolean @default(false) // Mặc định sản phẩm khi tạo sẽ không nổi bật
 
   // Thiết lập Khóa ngoại (Foreign Key) liên kết với bảng Category
   categoryId Int
@@ -219,6 +220,7 @@ model Review {
   product   Product  @relation(fields: [productId], references: [id])
   rating    Int // Số sao đánh giá
   comment   String?  @db.Text // Nội dung đánh giá
+  status    String   @default("ACTIVE") // Vi phạm thì đổi thành 'HIDDEN'
   createdAt DateTime @default(now()) @db.Timestamp(3)
 
   @@map("reviews")

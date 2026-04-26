@@ -20,6 +20,7 @@ const orderRoute = require("./routes/orderRoute");
 const paymentRoute = require("./routes/paymentRoute");
 const shipmentRoute = require("./routes/shipmentRoute");
 const adminCartRoute = require("./routes/adminCartRoute");
+const reviewRoute = require("./routes/reviewRoute");
 const { notFound, errorHandler } = require("./middlewares/errorMiddleware");
 
 app.get("/", (req, res) => {
@@ -39,6 +40,7 @@ app.use("/api/orders", orderRoute);
 app.use("/api/payments", paymentRoute);
 app.use("/api/shipments", shipmentRoute);
 app.use("/api/ad/cart", adminCartRoute);
+app.use("/api/reviews", reviewRoute);
 
 app.use(notFound);
 app.use(errorHandler);

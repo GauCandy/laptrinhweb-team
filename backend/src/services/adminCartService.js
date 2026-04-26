@@ -26,13 +26,18 @@ const getCartAnalytics = async () => {
   });
 
   // Tính Tỉ lệ chuyển đổi (Tổng Đơn hàng / Tổng Giỏ hàng)
-  const totalCarts = await prisma.cart.count();
+  const totalUsersWithCart = await prisma.cart.count();
   // Giả định bạn có bảng order. Nếu tên bảng khác, bạn sửa lại nhé!
-  const totalOrders = await prisma.order.count();
+  const usersWithOrdersRaw = await prisma.order.groupBy({
+    by: ["userId"],
+  });
+  const totalUsersWithOrders = usersWithOrdersRaw.length;
 
   let conversionRate = 0;
-  if (totalCarts > 0) {
-    conversionRate = ((totalOrders / totalCarts) * 100).toFixed(1); // Lấy 1 chữ số thập phân
+  if (totalUsersWithCart > 0) {
+    // Capping (Giới hạn tối đa 100% để tránh lỗi hiển thị nếu data test bị rác)
+    let rate = (totalUsersWithOrders / totalUsersWithCart) * 100;
+    conversionRate = rate > 100 ? 100 : rate.toFixed(1);
   }
 
   // Lấy Top 5 Sản phẩm đang nằm trong giỏ nhiều nhất
@@ -46,17 +51,49 @@ const getCartAnalytics = async () => {
   // Đi lấy thêm tên và ảnh của 5 sản phẩm này để Frontend hiển thị cho đẹp
   const topProducts = await Promise.all(
     topProductsRaw.map(async (item) => {
-      const productInfo = await prisma.product.findUnique({
-        where: { id: item.productId },
-        select: { name: true, price: true, images: true },
-      });
-      return {
-        productId: item.productId,
-        name: productInfo.name,
-        price: productInfo.price,
-        image: productInfo.images[0]?.url || null, // Lấy ảnh đầu tiên
-        totalInCarts: item._sum.quantity,
-      };
+      try {
+        const productInfo = await prisma.product.findUnique({
+          where: { id: item.productId },
+          include: {
+            images: true,
+          },
+        });
+
+        if (!productInfo) {
+          return {
+            productId: item.productId,
+            name: "Sản phẩm đã bị xóa",
+            price: 0,
+            image: null,
+            totalInCarts: item._sum.quantity,
+          };
+        }
+
+        let imageUrl = null;
+        if (productInfo.images && productInfo.images.length > 0) {
+          imageUrl = productInfo.images[0].url;
+        }
+
+        return {
+          productId: item.productId,
+          name: productInfo.name,
+          price: productInfo.price,
+          image: imageUrl,
+          totalInCarts: item._sum.quantity,
+        };
+      } catch (error) {
+        console.error(
+          `Lỗi lấy thông tin sản phẩm ID ${item.productId}:`,
+          err.message,
+        );
+        return {
+          productId: item.productId,
+          name: "Lỗi hiển thị tên",
+          price: 0,
+          image: null,
+          totalInCarts: item._sum.quantity,
+        };
+      }
     }),
   );
 

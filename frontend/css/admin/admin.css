@@ -536,6 +536,73 @@ body {
   color: var(--red-text);
 }
 
+/* Marketing và giao diện */
+.drop {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: 13.5px;
+  transition: all 0.15s;
+  border-left: 3px solid transparent;
+}
+
+.submenu-arrow {
+  font-size: 12px;
+  transition: transform 0.3s;
+}
+
+.marketing-submenu {
+  display: none;
+  flex-direction: column;
+  padding-left: 30px;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.marketing-submenu.show {
+  display: flex;
+}
+
+.submenu-arrow.rotate {
+  transform: rotate(180deg);
+}
+
+.featured-products {
+  color: #a0aec0;
+  text-decoration: none;
+  font-size: 12.5px;
+}
+
+.featured-products:hover {
+  background: var(--sidebar-hover-bg);
+  color: #fff;
+}
+
+.banners {
+  color: #a0aec0;
+  text-decoration: none;
+  font-size: 12.5px;
+}
+
+.banners:hover {
+  background: var(--sidebar-hover-bg);
+  color: #fff;
+}
+
+.coupons {
+  color: #a0aec0;
+  text-decoration: none;
+  font-size: 12.5px;
+}
+
+.coupons:hover {
+  background: var(--sidebar-hover-bg);
+  color: #fff;
+}
+
 /* ============ RESPONSIVE ============ */
 @media (max-width: 1024px) {
   .stat-grid {
