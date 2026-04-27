@@ -7,7 +7,7 @@ const dashboardController = require("../controllers/dashboardController");
 const { verifyToken, authorizeRole } = require("../middlewares/authMiddleware");
 
 router.get(
-  "/dashboard",
+  "/db/dashboard",
   verifyToken,
   authorizeRole("ADMIN"),
   dashboardController.getAdminDashboard,

@@ -1,64 +1,71 @@
 let revenueChartInstance = null;
 
-// ============ STAT CARDS ============
+// HÀM GỌI API CHÍNH & PHÂN PHỐI DỮ LIỆU
 
-async function loadStatCards() {
+async function loadDashboardData() {
   try {
-    // Gọi song song 2 API cùng lúc
-    const [usersRes, productsRes] = await Promise.all([
-      apiFetch("/users"),
-      apiFetch("/products"),
-    ]);
+    // GỌI 1 LẦN DUY NHẤT VÀO API TỔNG HỢP (Chỉnh lại URL nếu API của bạn tên khác)
+    const res = await apiFetch("/admin/db/dashboard");
 
-    // Vì backend trả về { success: true, data: [...] }
-    // Nên phải lấy .data, nếu không có thì dùng mảng rỗng []
-    const users = usersRes.data || [];
-    const products = productsRes.data || [];
+    if (res && res.success) {
+      const data = res.data;
 
-    // Điền số liệu vào html theo id
-    document.getElementById("stat-users").textContent = formatNumber(
-      users.length,
-    );
-    document.getElementById("stat-products").textContent = formatNumber(
-      products.length,
-    );
-
-    // TODO: bổ sung khi có API orders và revenue
-    // document.getElementById('stat-orders').textContent  = formatNumber(orders.length);
-    // document.getElementById('stat-revenue').textContent = formatPrice(totalRevenue);
+      // Chia bài cho các hàm vẽ giao diện
+      renderStatCards(data.stats);
+      renderRevenueChart(data.chartData);
+      renderRecentOrders(data.recentOrders);
+      renderTopProducts(data.topSellingProducts);
+    } else {
+      console.error("Lỗi lấy data Dashboard:", res?.message);
+    }
   } catch (err) {
-    console.error("loadStatCards:", err);
+    console.error("Lỗi kết nối Backend:", err);
   }
 }
 
-// ============ BIỂU ĐỒ DOANH THU ============
+// ============ VẼ 4 THẺ THỐNG KÊ (STAT CARDS) ============
 
-async function loadRevenueChart() {
-  // Tạo nhãn 7 ngày gần nhất: ["13/04", "14/04", ... "19/04"]
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i)); // Lùi ngày về quá khứ
-    return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
-  });
+function renderStatCards(stats) {
+  // Nếu không có HTML thì bỏ qua để khỏi báo lỗi
+  const elUsers = document.getElementById("stat-users");
+  const elProducts = document.getElementById("stat-products");
+  const elOrders = document.getElementById("stat-orders");
+  const elRevenue = document.getElementById("stat-revenue");
 
-  // TODO: thay bằng apiFetch('/revenue?days=7') khi có API
-  // Tạm thời dùng data giả để biểu đồ không trống
-  const data = [1200000, 3400000, 2800000, 4200000, 3100000, 5600000, 4800000];
+  if (elUsers) elUsers.textContent = formatNumber(stats.totalUsers);
+  if (elProducts) elProducts.textContent = formatNumber(stats.totalProducts);
+  if (elOrders) elOrders.textContent = formatNumber(stats.totalOrders);
 
-  // Lấy thẻ canvas trong HTML để vẽ vào
+  // Lưu ý: Đảm bảo bạn đã viết hàm formatPrice() ở file admin-utils.js nhé
+  if (elRevenue) elRevenue.textContent = formatPrice(stats.totalRevenue);
+}
+
+// ============ VẼ BIỂU ĐỒ DOANH THU (CHART.JS) ============
+
+function renderRevenueChart(chartData) {
   const ctx = document.getElementById("revenueCanvas");
   if (!ctx) return;
 
-  new Chart(ctx, {
-    type: "bar", //Biểu đồ cột
+  // Tách dữ liệu từ mảng API trả về
+  // Backend đang trả về: [{ date: "21-04", revenue: 1200000 }, ...]
+  const labels = chartData.map((item) => item.date);
+  const dataValues = chartData.map((item) => item.revenue);
+
+  // Hủy biểu đồ cũ nếu đã tồn tại để vẽ cái mới đè lên
+  if (revenueChartInstance) {
+    revenueChartInstance.destroy();
+  }
+
+  revenueChartInstance = new Chart(ctx, {
+    type: "bar",
     data: {
-      labels: last7Days, // trục X - ngày
+      labels: labels,
       datasets: [
         {
           label: "Doanh thu",
-          data: data, // trục Y - số tiền
-          backgroundColor: "rgba(22, 163, 74, 0.8", // Màu xanh lá
-          borderColer: "#16a34a",
+          data: dataValues,
+          backgroundColor: "rgba(22, 163, 74, 0.8)",
+          borderColor: "#16a34a", // Đã fix lỗi chính tả borderColer
           borderWidth: 1,
           borderRadius: 4,
         },
@@ -67,11 +74,11 @@ async function loadRevenueChart() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      Plugin: {
-        legend: { display: false }, // ẩn chú thích
+      plugins: {
+        // Đã fix lỗi chính tả Plugin -> plugins
+        legend: { display: false },
         tooltip: {
           callbacks: {
-            // Khi hover vào cột -> hiện số tiền
             label: (c) => formatPrice(c.raw),
           },
         },
@@ -79,95 +86,85 @@ async function loadRevenueChart() {
       scales: {
         y: {
           beginAtZero: true,
-          tricks: {
-            callback: (v) => formatPrice(v), //format trụy Y
+          ticks: {
+            // Đã fix lỗi chính tả tricks -> ticks
+            callback: (v) => formatPrice(v),
           },
         },
         x: {
-          gird: { display: false }, // ẩn đường kẻ dọc
+          grid: { display: false }, // Đã fix lỗi chính tả gird -> grid
         },
       },
     },
   });
 }
 
-// ============ ĐƠN HÀNG GẦN ĐÂY ============
+// ============ VẼ BẢNG ĐƠN HÀNG GẦN ĐÂY ============
 
-async function loadRecentOrders() {
+function renderRecentOrders(orders) {
   const tbody = document.getElementById("recentOrdersTable");
+  if (!tbody) return;
 
-  try {
-    // TODO: thay bằng apiFetch('/orders?limit=5') khi có API
-    // Tạm thời hiện thông báo chờ
-    tbody.innerHTML = `
-        <tr>
-                <td colspan="4" class="table-loading">
-                    Chưa có API đơn hàng
-                </td>
-            </tr>
-        `;
-
-    /* Khi có API mở ra dùng:
-        const res = await apiFetch('/orders?limit=5');
-        const orders = res.data || [];
-
-        tbody.innerHTML = orders.map(order => `
-            <tr>
-                <td>#${order.id}</td>
-                <td>${order.user?.fullName || '—'}</td>
-                <td>${formatPrice(order.totalAmount)}</td>
-                <td>${statusBadge(order.status)}</td>
-            </tr>
-        `).join('');
-        */
-  } catch (err) {
-    tbody.innerHTML = `
-            <tr>
-                <td colspan="4" class="table-loading">Lỗi tải dữ liệu</td>
-            </tr>
-        `;
-    console.error("loadRecentOrders:", err);
+  if (!orders || orders.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" class="table-loading" style="text-align:center; padding:20px;">Chưa có đơn hàng nào</td></tr>`;
+    return;
   }
+
+  tbody.innerHTML = orders
+    .map(
+      (order) => `
+        <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #eee;">#${order.id}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #eee;">${order.user?.fullName || order.user?.email || "Khách vãng lai"}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #eee;"><strong>${formatPrice(order.totalAmount)}</strong></td>
+            <td style="padding: 12px; border-bottom: 1px solid #eee;">${renderStatusBadge(order.status)}</td>
+        </tr>
+    `,
+    )
+    .join("");
 }
 
-// ============ SẢN PHẨM BÁN CHẠY ============
+// Hàm phụ trợ để vẽ màu cho Trạng thái đơn hàng
+function renderStatusBadge(status) {
+  const badges = {
+    PENDING:
+      '<span style="background: #fef08a; color: #854d0e; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Chờ xử lý</span>',
+    PROCESSING:
+      '<span style="background: #bfdbfe; color: #1e3a8a; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Đang giao</span>',
+    COMPLETED:
+      '<span style="background: #bbf7d0; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Hoàn thành</span>',
+    CANCELLED:
+      '<span style="background: #fecaca; color: #991b1b; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Đã hủy</span>',
+  };
+  return (
+    badges[status] ||
+    `<span style="background: #e5e7eb; color: #374151; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${status}</span>`
+  );
+}
 
-async function loadTopProducts() {
+// VẼ BẢNG SẢN PHẨM BÁN CHẠY
+function renderTopProducts(products) {
   const tbody = document.getElementById("topProductsTable");
+  if (!tbody) return;
 
-  try {
-    const res = await apiFetch("/products?limit=5&sort=sold");
-    const products = res.data || [];
-
-    if (!products.length) {
-      tbody.innerHTML = `
-            <tr>
-                    <td colspan="3" class="table-loading">Không có dữ liệu</td>
-                </tr>
-            `;
-      return;
-    }
-
-    tbody.innerHTML = products
-      .map(
-        (p) => `
-            <tr>
-                <td>${p.name}</td>
-                <td>${formatNumber(p.sold || 0)}</td>
-                <td>${formatPrice(p.price)}</td>
-            </tr>
-            `,
-      )
-      .join("");
-  } catch (err) {
-    (tbody,
-      (innerHTML = `
-             <tr>
-                <td colspan="3" class="table-loading">Lỗi tải dữ liệu</td>
-            </tr>
-        `));
-    console.error("topProductsTable:", err);
+  if (!products || products.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3" class="table-loading" style="text-align:center; padding:20px;">Chưa có dữ liệu</td></tr>`;
+    return;
   }
+
+  tbody.innerHTML = products
+    .map(
+      (p) => `
+        <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #eee; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${p.name}">
+                ${p.name}
+            </td>
+            <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">${formatNumber(p.soldQuantity || 0)}</td>
+            <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right;">${formatPrice(p.revenue || 0)}</td>
+        </tr>
+    `,
+    )
+    .join("");
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -181,12 +178,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Chạy đồng hồ
   startClock();
 
-  // Load tất cả data song song cho nhanh
-  // Promise.all nghĩa là chạy cùng lúc, không cần phải chờ
-  await Promise.all([
-    // loadStatCards(),
-    loadRevenueChart(),
-    loadRecentOrders(),
-    loadTopProducts(),
-  ]);
+  // Load tất cả data
+  loadDashboardData();
 });
