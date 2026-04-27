@@ -233,6 +233,7 @@ model Banner {
   targetLink   String?  @db.Text // Link khi khách hàng click vào banner (tùy chọn)
   isActive     Boolean  @default(true) // Trạng thái bật/tắt banner
   displayOrder Int      @default(0) // Thứ tự hiển thị trên trang chủ
+  position     String   @default("HOME_HERO") // Vị trí: HOME_HERO, CATEGORY_TOP, SIDEBAR...
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
